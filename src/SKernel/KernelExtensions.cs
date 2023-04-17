@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.KernelExtensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using SKernel.Factory;
 using SKernel.Factory.Config;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace SKernel.Factory
+namespace SKernel
 {
     internal static partial class Extensions
     {
