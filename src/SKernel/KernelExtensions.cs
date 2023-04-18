@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace SKernel
 {
-    internal static partial class Extensions
+    public static partial class Extensions
     {
         internal static ISKFunction CreatePlan(this IKernel kernel) =>
             kernel.Skills.GetFunction("plannerskill", "createplan");
@@ -35,7 +35,7 @@ namespace SKernel
             return context;
         }
 
-        internal static void RegisterSemanticSkills(this IKernel kernel, string skill, IList<string> skills, ILogger logger)
+        internal static IKernel RegisterSemanticSkills(this IKernel kernel, string skill, IList<string> skills, ILogger logger)
         {
             foreach (var prompt in Directory.EnumerateFiles(skill, "*.txt", SearchOption.AllDirectories)
                          .Select(_ => new FileInfo(_)))
@@ -49,6 +49,7 @@ namespace SKernel
                 logger.LogDebug($"Importing semantic skill ${skill}/${skillName}");
                 kernel.ImportSemanticSkillFromDirectory(skill, skillName);
             }
+            return kernel;
         }
 
         private static string FunctionName(DirectoryInfo skill, DirectoryInfo? folder)
@@ -76,14 +77,18 @@ namespace SKernel
 
         public static IKernel RegistryCoreSkills(this IKernel kernel, IList<string> skills)
         {
-            if (ShouldLoad(skills, nameof(FileIOSkill))) kernel.ImportSkill(new FileIOSkill(), nameof(FileIOSkill));
-            if (ShouldLoad(skills, nameof(HttpSkill))) kernel.ImportSkill(new HttpSkill(), nameof(HttpSkill));
-            if (ShouldLoad(skills, nameof(TextSkill))) kernel.ImportSkill(new TextSkill(), nameof(TextSkill));
+            if (ShouldLoad(skills, nameof(FileIOSkill))) 
+                kernel.ImportSkill(new FileIOSkill(), nameof(FileIOSkill));
+            if (ShouldLoad(skills, nameof(HttpSkill)))
+                kernel.ImportSkill(new HttpSkill(), nameof(HttpSkill));
+            if (ShouldLoad(skills, nameof(TextSkill)))
+                kernel.ImportSkill(new TextSkill(), nameof(TextSkill));
             if (ShouldLoad(skills, nameof(TextMemorySkill)))
                 kernel.ImportSkill(new TextMemorySkill(), nameof(TextMemorySkill));
             if (ShouldLoad(skills, nameof(ConversationSummarySkill)))
                 kernel.ImportSkill(new ConversationSummarySkill(kernel), nameof(ConversationSummarySkill));
-            if (ShouldLoad(skills, nameof(TimeSkill))) kernel.ImportSkill(new TimeSkill(), nameof(TimeSkill));
+            if (ShouldLoad(skills, nameof(TimeSkill)))
+                kernel.ImportSkill(new TimeSkill(), nameof(TimeSkill));
 
             kernel.ImportSkill(new PlannerSkill(kernel), nameof(PlannerSkill));
             return kernel;
@@ -99,13 +104,14 @@ namespace SKernel
            services.AddConsoleLogger(configuration);
        });
 
-        public static void AddSemanticKernelFactory(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddSemanticKernelFactory(this IServiceCollection services, IConfiguration configuration)
         {
             var config = new SKConfig();
             configuration.Bind(config);
 
             var options = config.Skills.ToSkillOptions();
-            foreach (var skillType in options.NativeSkillTypes) services.AddSingleton(skillType);
+            foreach (var skillType in options.NativeSkillTypes)
+                services.AddSingleton(skillType);
 
             services.AddSingleton(options);
             services.AddSingleton(config);
@@ -118,9 +124,10 @@ namespace SKernel
                 config.Memory.Type == "Volatile"
                     ? new VolatileMemoryStore()
                     : new QdrantMemoryStore(config.Memory.Host, config.Memory.Port, config.Memory.VectorSize));
+            return services;
         }
 
-        public static void AddConsoleLogger(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddConsoleLogger(this IServiceCollection services, IConfiguration configuration)
         {
             var factory = LoggerFactory.Create(builder =>
             {
@@ -129,6 +136,7 @@ namespace SKernel
             });
             services.AddSingleton(factory);
             services.AddSingleton<ILogger>(factory.CreateLogger<object>());
+            return services;
         }
 
         public static IList<FunctionView> ToSkills(this IKernel kernel)

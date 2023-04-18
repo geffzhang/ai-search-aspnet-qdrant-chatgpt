@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Masa.Contrib.Service.MinimalAPIs" Version="$(MASAFrameworkVersion)" />
-		<PackageReference Include="Masa.Contrib.Exceptions" Version="$(MASAFrameworkVersion)" />
+		<PackageReference Include="Masa.Contrib.Service.MinimalAPIs" Version="1.0.0-preview.29" />
+		<PackageReference Include="Masa.Contrib.Exceptions" Version="1.0.0-preview.29" />
 	</ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SKernel.Contracts\SKernel.Contract.csproj" />

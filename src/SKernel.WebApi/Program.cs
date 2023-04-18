@@ -1,7 +1,6 @@
-
-using Masa.BuildingBlocks.Data;
-using Microsoft.Extensions.Options;
+using Masa.BuildingBlocks.Service.MinimalAPIs;
 using Microsoft.OpenApi.Models;
+using SKernel;
 using System.Reflection;
 
 namespace SKernel.WebApi
@@ -40,7 +39,9 @@ namespace SKernel.WebApi
                 loadMinimalApiAssembies.Add(Assembly.Load("SKernel.Service")); //业务层程序集
                 opt.Assemblies = loadMinimalApiAssembies;
             });
+            builder.Services.AddSemanticKernelFactory(builder.Configuration);
             builder.Services.AddAutoInject();
+            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             var app = builder.Build();
 
