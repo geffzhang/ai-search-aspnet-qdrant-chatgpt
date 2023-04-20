@@ -7,6 +7,6 @@
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<IList<string>> PostAsync(int? iterations, Message message);
+        Task<IResult> PostAsync(int? iterations, Message message);
     }
 }
