@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SKernel
@@ -160,5 +162,50 @@ namespace SKernel
                .SelectMany(file => Assembly.LoadFrom(file).GetTypes().Where(_ =>
                    _.GetMethods().Any(m => m.GetCustomAttribute<SKFunctionAttribute>() != null)))).ToList()
        };
+
+
+        /// <summary>
+        /// 加密
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static string AesEncryption(this string data, string key)
+        {
+            byte[] keyArr = Encoding.UTF8.GetBytes(key);
+            byte[] dataArr = Encoding.UTF8.GetBytes(data);
+
+            using var aes = Aes.Create();
+            aes.Key = keyArr;
+            aes.Mode = CipherMode.ECB;
+            aes.Padding = PaddingMode.PKCS7;
+
+            using var cryptoTransform = aes.CreateEncryptor();
+            byte[] result = cryptoTransform.TransformFinalBlock(dataArr, 0, dataArr.Length);
+
+            return Convert.ToBase64String(result);
+        }
+
+        /// <summary>
+        /// 解密
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static string AesDecryption(this string data, string key)
+        {
+            byte[] keyArr = Encoding.UTF8.GetBytes(key);
+            byte[] dataArr = Convert.FromBase64String(data);
+
+            using var aes = Aes.Create();
+            aes.Key = keyArr;
+            aes.Mode = CipherMode.ECB;
+            aes.Padding = PaddingMode.PKCS7;
+
+            using var cryptoTransform = aes.CreateDecryptor();
+            byte[] result = cryptoTransform.TransformFinalBlock(dataArr, 0, dataArr.Length);
+
+            return Convert.ToBase64String(result);
+        }
     }
 }
