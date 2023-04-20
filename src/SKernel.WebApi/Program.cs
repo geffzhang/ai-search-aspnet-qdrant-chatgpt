@@ -1,6 +1,9 @@
 using Masa.BuildingBlocks.Service.MinimalAPIs;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.OpenApi.Models;
+using Microsoft.SemanticKernel;
 using SKernel;
+using SKernel.Factory.Config;
 using System.Reflection;
 
 namespace SKernel.WebApi
@@ -11,8 +14,18 @@ namespace SKernel.WebApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            var skills = builder.Configuration.GetSection("Skills").Get<string[]>() ?? new[] { "./skills" };
+
+            foreach (var folder in skills)
+            {
+                if (!Directory.Exists(folder))
+                    Directory.CreateDirectory(folder);
+            }
             // Add services to the container.
             builder.Services.AddAuthorization();
+            builder.Services.AddConsoleLogger(builder.Configuration);
+            builder.Services.AddSemanticKernelFactory(builder.Configuration);
+            builder.WebHost.UseUrls($"http://*:{builder.Configuration["Port"] ?? "5000"}");
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -55,7 +68,24 @@ namespace SKernel.WebApi
             app.UseAuthorization();
             app.UseMasaExceptionHandler();
             app.MapMasaMinimalAPIs();
-
+            app.UseExceptionHandler(handler =>
+            handler.Run(async context =>
+            {
+                var exception = context.Features.Get<IExceptionHandlerFeature>()!.Error;
+                switch (exception)
+                {
+                    case KernelException
+                    {
+                        ErrorCode: KernelException.ErrorCodes.FunctionNotAvailable
+                    }
+                    kernelException:
+                        await Results.BadRequest(kernelException.Message).ExecuteAsync(context);
+                        break;
+                    default:
+                        await Results.Problem(exception.Message).ExecuteAsync(context);
+                        break;
+                }
+                }));
             app.Run();
         }
     }

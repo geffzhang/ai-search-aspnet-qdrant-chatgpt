@@ -10,14 +10,11 @@ namespace SKernel.Service.Services
 {
     public class SkillsService : ServiceBase, ISkillsService
     {
-        private IKernel kernel;
         private SemanticKernelFactory semanticKernelFactory;
         private IHttpContextAccessor contextAccessor;
 
-        public SkillsService(IKernel kernel, SemanticKernelFactory factory, IHttpContextAccessor contextAccessor)
+        public SkillsService(SemanticKernelFactory factory, IHttpContextAccessor contextAccessor)
         {
-            
-            this.kernel = kernel;
             this.semanticKernelFactory = factory;
             this.contextAccessor = contextAccessor;
             RouteOptions.DisableAutoMapRoute = true;//当前服务禁用自动注册路由
@@ -40,6 +37,7 @@ namespace SKernel.Service.Services
         public async Task<IResult> GetSkillsAsync()
         {
             var httpRequest = this.contextAccessor?.HttpContext?.Request;
+
             return  httpRequest.TryGetKernel(semanticKernelFactory, out var kernel)
                 ? Results.Ok(
                     new Dictionary<string, List<Dictionary<string, object>>>
