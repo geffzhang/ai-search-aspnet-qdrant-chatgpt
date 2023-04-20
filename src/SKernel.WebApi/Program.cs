@@ -14,7 +14,7 @@ namespace SKernel.WebApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            var skills = builder.Configuration.GetSection("Skills").Get<string[]>() ?? new[] { "./skills" };
+            var skills = builder.Configuration.GetSection("SKConfig:Skills").Get<string[]>() ?? new[] { "./skills" };
 
             foreach (var folder in skills)
             {

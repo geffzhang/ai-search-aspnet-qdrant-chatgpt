@@ -27,8 +27,13 @@ namespace SKernel.Factory
 
         public IKernel Create(ApiKey key, IList<string>? skills = null)
         {
-            var selected = (skills ?? new List<string>()).Select(_ => _.ToLower()).ToList();
-            var kernel = new KernelBuilder().WithOpenAI(_config, key).WithLogger(_logger).Build()
+            var selected = (skills ?? new List<string>())
+                .Select(_ => _.ToLower()).ToList();
+
+            var kernel = new KernelBuilder()
+                .WithOpenAI(_config, key)
+                .WithLogger(_logger)
+                .Build()
                 .RegistryCoreSkills(selected)
                 .Register(_native, selected)
                 .Register(_semantic, selected);
